@@ -12,3 +12,14 @@
 #define itype 19
 #define rtype 51
 #define btype 99
+
+#define beq  0
+#define bne  1
+#define blt  4
+#define bge  5
+#define bltu 6
+#define bgeu 7
+
+#define addi 0
+
+#define sub  0 

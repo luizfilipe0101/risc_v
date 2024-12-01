@@ -7,7 +7,7 @@ void imediate(uint32_t *fields, uint32_t *regs)
 
   switch(fields[func3])
   {
-    case 0:         /* ADDI*/
+    case addi:         /* ADDI*/
       puts("ADDI");
       regs[fields[rd]] = regs[fields[rs1]] + fields[imm];
       break;

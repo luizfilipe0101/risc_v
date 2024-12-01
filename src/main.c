@@ -23,6 +23,8 @@ int main(int argc, char **argv)
   int PC = 0;
   uint32_t instr = 0;
   
+  int instr_return = 0;
+  
   
   FILE *rom = fopen(argv[1], "r");
   
@@ -37,9 +39,7 @@ int main(int argc, char **argv)
       break;
     
     if(byte != 10 && byte != 13)
-    {
       size++;
-    }
     
   }
   
@@ -57,6 +57,7 @@ int main(int argc, char **argv)
     {
       buf[count] = byte;
       count++;
+      //printf("%c", byte);
     }
     
   }
@@ -69,8 +70,14 @@ int main(int argc, char **argv)
   
   // ******************* RUNNING *****************************
   
-  for(i = 0; i < 20; i++)
+  PC += entry_point;
+  
+  putchar(10);
+  
+  for(i = 0; i < 30; i++)
     printf("%X ", flash[i]);
+    
+  //exit(0);
     
   while(1)
   {
@@ -81,16 +88,28 @@ int main(int argc, char **argv)
     instr |= flash[PC + 2] << 8*2;
     instr |= flash[PC + 3] << 8*3;
     
-    if(check_type(instr, register_file))
-      break;
+    instr_return = check_type(instr, register_file);
     
-    PC += 4;
+    switch(instr_return)
+    {
+      case 0:
+        PC += 4;
+        debug();
+        break;
+        
+      case 1:
+        exit(1);
+        break;
+        
+      default:
+        PC += instr_return;     /* Branch or jump */
+        break;
+    }
+    
   }
   
   // ******************* END *********************************
         
-  debug();
-  
   return 0;
 }
 
@@ -151,7 +170,7 @@ void load_memory(char *rom, int len, int *entry)
   char get_status[2] = {0};
   int status = 0;
   int data_len = 0;
-  int addr = 0; 
+  //int addr = 0; 
   
   int count_mem = 0;
   
@@ -172,12 +191,13 @@ void load_memory(char *rom, int len, int *entry)
       read_byte[0] = rom[i+1];
       read_byte[1] = rom[i+2];
       data_len = strhex(read_byte, 2);
+      //printf("data_len %d = %d\n", i, data_len);
       
       get_addr[0] = rom[i+3];
       get_addr[1] = rom[i+4];
       get_addr[2] = rom[i+5];
       get_addr[3] = rom[i+6];
-      addr = strhex(get_addr, 4);
+      //addr = strhex(get_addr, 4);
       
       get_status[0] = rom[i+7];
       get_status[1] = rom[i+8];
@@ -186,10 +206,10 @@ void load_memory(char *rom, int len, int *entry)
       if(status == 0 || status == 4)
         for(j = 0; j < (data_len*2); j+=2)
         {
-          read_byte[0] = rom[(j+9)];
-          read_byte[1] = rom[(j+9)+1];
-          //printf("Byte: %d\n", (uint8_t)strhex(read_byte, 2));
-          flash[addr+count_mem] = (uint8_t)strhex(read_byte, 2);
+          read_byte[0] = rom[((i+j)+9)];
+          read_byte[1] = rom[((i+j)+9)+1];
+          //printf("Byte: %X\n", (uint8_t)strhex(read_byte, 2));
+          flash[*entry+count_mem] = (uint8_t)strhex(read_byte, 2);
           
           count_mem += 1;
         }// end for j
