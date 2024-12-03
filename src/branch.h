@@ -3,5 +3,6 @@
 #endif
 
 #include <stdint.h>
+#include "defines.h"
 
-int branch(uint32_t *fields, uint32_t *regs);
+int branch(int32_t *fields, reg *regs);

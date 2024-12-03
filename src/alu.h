@@ -3,6 +3,7 @@
 #endif
 
 #include <stdint.h>
+#include "defines.h"
 
-void imediate(uint32_t *fields, uint32_t *regs);
-void regist(uint32_t *fields, uint32_t *regs);
+void imediate(int32_t *fields, reg *regs);
+void regist(int32_t *fields, reg *regs);

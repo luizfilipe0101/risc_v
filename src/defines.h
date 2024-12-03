@@ -1,6 +1,6 @@
 #ifndef DEFINES_H
 #define DEFINES_H
-#endif
+
 
 #define rd    0
 #define func3 1
@@ -22,4 +22,13 @@
 
 #define addi 0
 
-#define sub  0 
+#define sub  0
+
+
+typedef union
+{                     
+  uint32_t uval;      
+  int32_t  sval;      
+}reg;                  
+
+#endif

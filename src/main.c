@@ -2,14 +2,16 @@
 #include <stdlib.h>
 #include "../libs/strhex.h"
 #include "decoder.h"
+#include "defines.h"
 
 
 int checksum(char *stream, int size);
 void load_memory(char *rom, int len, int *entry);
 void debug(void);
 
+
 uint8_t  flash[0xFFFF] = {0};
-uint32_t register_file[32] = {0};
+reg register_file[32] = {0};
 
 int main(int argc, char **argv)
 {
@@ -223,39 +225,39 @@ void load_memory(char *rom, int len, int *entry)
 void debug(void)
 {
   puts("*** Registers ***");
-  printf("Zero: %d\n", register_file[0]);
-  printf("ra: %d\n", register_file[1]);
-  printf("sp: %d\n", register_file[2]);
-  printf("gp: %d\n", register_file[3]);
-  printf("tp: %d\n", register_file[4]);
-  printf("t0: %d\n", register_file[5]);
-  printf("t1: %d\n", register_file[6]);
-  printf("t2: %d\n", register_file[7]);
-  printf("x8 / s0 / fp: %d\n", register_file[8]);
-  printf("s1: %d\n", register_file[9]);
+  printf("Zero: %d\n", register_file[0].sval);
+  printf("ra: %d\n", register_file[1].sval);
+  printf("sp: %d\n", register_file[2].sval);
+  printf("gp: %d\n", register_file[3].sval);
+  printf("tp: %d\n", register_file[4].sval);
+  printf("t0: %d\n", register_file[5].sval);
+  printf("t1: %d\n", register_file[6].sval);
+  printf("t2: %d\n", register_file[7].sval);
+  printf("x8 / s0 / fp: %d\n", register_file[8].sval);
+  printf("s1: %d\n", register_file[9].sval);
   
-  printf("a0: %d\n", register_file[10]);
-  printf("a1: %d\n", register_file[11]);
-  printf("a2: %d\n", register_file[12]);
-  printf("a3: %d\n", register_file[13]);
-  printf("a4: %d\n", register_file[14]);
-  printf("a5: %d\n", register_file[15]);
-  printf("a6: %d\n", register_file[16]);
-  printf("a7: %d\n", register_file[17]);
-  printf("s2: %d\n", register_file[18]);
-  printf("s3: %d\n", register_file[19]);
+  printf("a0: %d\n", register_file[10].sval);
+  printf("a1: %d\n", register_file[11].sval);
+  printf("a2: %d\n", register_file[12].sval);
+  printf("a3: %d\n", register_file[13].sval);
+  printf("a4: %d\n", register_file[14].sval);
+  printf("a5: %d\n", register_file[15].sval);
+  printf("a6: %d\n", register_file[16].sval);
+  printf("a7: %d\n", register_file[17].sval);
+  printf("s2: %d\n", register_file[18].sval);
+  printf("s3: %d\n", register_file[19].sval);
   
-  printf("s4: %d\n", register_file[20]);
-  printf("s5: %d\n", register_file[21]);
-  printf("s6: %d\n", register_file[22]);
-  printf("s7: %d\n", register_file[23]);
-  printf("s8: %d\n", register_file[24]);
-  printf("s9: %d\n", register_file[25]);
-  printf("s10: %d\n", register_file[26]);
-  printf("s11: %d\n", register_file[27]);
-  printf("t3: %d\n", register_file[28]);
-  printf("t4: %d\n", register_file[29]);
+  printf("s4: %d\n", register_file[20].sval);
+  printf("s5: %d\n", register_file[21].sval);
+  printf("s6: %d\n", register_file[22].sval);
+  printf("s7: %d\n", register_file[23].sval);
+  printf("s8: %d\n", register_file[24].sval);
+  printf("s9: %d\n", register_file[25].sval);
+  printf("s10: %d\n", register_file[26].sval);
+  printf("s11: %d\n", register_file[27].sval);
+  printf("t3: %d\n", register_file[28].sval);
+  printf("t4: %d\n", register_file[29].sval);
   
-  printf("t5: %d\n", register_file[30]);
-  printf("t6: %d\n", register_file[31]);
+  printf("t5: %d\n", register_file[30].sval);
+  printf("t6: %d\n", register_file[31].sval);
 }

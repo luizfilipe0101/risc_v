@@ -3,5 +3,6 @@
 #endif
 
 #include <stdint.h>
+#include "defines.h"
 
-int check_type(uint32_t instr, uint32_t *regs);
+int check_type(uint32_t instr, reg *regs);
