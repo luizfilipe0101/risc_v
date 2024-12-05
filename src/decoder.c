@@ -3,6 +3,7 @@
 #include "alu.h"
 #include "branch.h"
 #include "defines.h"
+#include "log.h"
 
 
 uint32_t opcode = 0;
@@ -24,6 +25,7 @@ int check_type(uint32_t instr, mem *flash, reg *regs)
   
   opcode = instr & 0x7F;
   printf("Opcode: %d\n", opcode);
+
   switch(opcode)
   {
     case itype:
@@ -32,11 +34,11 @@ int check_type(uint32_t instr, mem *flash, reg *regs)
       fields[2]  = (instr >> 15) & 0x1F;
       fields[5]  = (instr >> 25) & 0x7F;
       fields[4]  = (instr >> 31) & 1 ? ((instr >> 20) | 0xFFFFF000) : (instr >> 20);        
-
+      
       imediate(fields, regs);
       break;
       
-    case ltype: /*Loads with Itype format*/
+    case ltype: /*Loads with Itype format*/ 
       fields[0]  = (instr >> 7)  & 0x1F;
       fields[1]  = (instr >> 12) & 0x07;
       fields[2]  = (instr >> 15) & 0x1F;
@@ -82,9 +84,10 @@ int check_type(uint32_t instr, mem *flash, reg *regs)
       
     default:
       fprintf(stderr, "RV32I - Internal Segmentation Fault\n");
-      return 1;
-      
+      return 1;      
   }
+
+  log_instr(instr, opcode, fields, regs);
   
   return 0;
 

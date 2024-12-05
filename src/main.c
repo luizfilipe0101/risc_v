@@ -3,6 +3,7 @@
 #include "../libs/strhex.h"
 #include "decoder.h"
 #include "defines.h"
+#include "log.h"
 
 
 int checksum(char *stream, int size);
@@ -68,13 +69,10 @@ int main(int argc, char **argv)
   
   !checksum(buf, size) ? puts("CHECKSUM: OK!") : exit(1);
   load_memory(buf, size, &entry_point);
-
-  
-  free(buf);
-  fclose(rom);
   
 
   printf("Addr 16 = %.4X\n", flash[16].uval);
+
   
   // ******************* RUNNING *****************************
   
@@ -83,6 +81,8 @@ int main(int argc, char **argv)
   putchar(10);
     
   //exit(0);
+
+  log_gen(buf, size, flash, register_file, instr);
     
   while(1)
   {
@@ -104,10 +104,12 @@ int main(int argc, char **argv)
     {
       case 0:
         PC += 4;
-        debug();
         break;
         
       case 1:
+        debug();
+        free(buf);
+        fclose(rom);
         exit(1);
         break;
         
@@ -115,10 +117,14 @@ int main(int argc, char **argv)
         PC += (int16_t)instr_return;     /* Branch or jump */
         break;
     }
+
     
   }
   
   // ******************* END *********************************
+
+  free(buf);
+  fclose(rom);
         
   return 0;
 }

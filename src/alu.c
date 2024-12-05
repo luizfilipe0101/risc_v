@@ -3,11 +3,12 @@
 #include "defines.h"
 
 void imediate(int32_t *fields, reg *regs)
-{  
+{ 
+
   switch(fields[func3])
   {
     
-    case addi:         /* ADDI*/
+    case 0:         /* ADDI*/
       puts("ADDI");
       regs[fields[rd]].sval = regs[fields[rs1]].sval + fields[imm];
       break;
