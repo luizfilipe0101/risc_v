@@ -6,7 +6,7 @@ uint8_t ascii_to(char chr);
 uint16_t strhex(char *num, int len)
 {
   register int i;
-  uint8_t result = 0;
+  uint16_t result = 0;
   int power = len;
   
   for(i = 0; i < len; i++)
@@ -14,6 +14,7 @@ uint16_t strhex(char *num, int len)
     
   return result;
 }
+
 
 uint8_t ascii_to(char chr)
 {

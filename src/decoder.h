@@ -5,4 +5,4 @@
 #include <stdint.h>
 #include "defines.h"
 
-int check_type(uint32_t instr, reg *regs);
+int check_type(uint32_t instr, mem *flash, reg *regs);

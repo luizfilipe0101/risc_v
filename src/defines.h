@@ -12,6 +12,8 @@
 #define itype 19
 #define rtype 51
 #define btype 99
+#define ltype 3
+#define utype 55
 
 #define beq  0
 #define bne  1
@@ -29,6 +31,12 @@ typedef union
 {                     
   uint32_t uval;      
   int32_t  sval;      
-}reg;                  
+}reg;   
+
+typedef union
+{
+  uint8_t uval;
+  int8_t  sval;
+}mem;
 
 #endif

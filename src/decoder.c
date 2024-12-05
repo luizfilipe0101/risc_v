@@ -8,7 +8,7 @@
 uint32_t opcode = 0;
 
 
-int check_type(uint32_t instr, reg *regs)
+int check_type(uint32_t instr, mem *flash, reg *regs)
 {
   printf("Instr: %.8X\n", instr);
   int32_t fields[6] = {0};
@@ -31,20 +31,25 @@ int check_type(uint32_t instr, reg *regs)
       fields[1]  = (instr >> 12) & 0x07;
       fields[2]  = (instr >> 15) & 0x1F;
       fields[5]  = (instr >> 25) & 0x7F;
+      fields[4]  = (instr >> 31) & 1 ? ((instr >> 20) | 0xFFFFF000) : (instr >> 20);        
+
+      imediate(fields, regs);
+      break;
+      
+    case ltype: /*Loads with Itype format*/
+      fields[0]  = (instr >> 7)  & 0x1F;
+      fields[1]  = (instr >> 12) & 0x07;
+      fields[2]  = (instr >> 15) & 0x1F;
+      fields[5]  = (instr >> 25) & 0x7F;
       
       /* Signed Extended*/
       if(((instr >> 31) & 1) == 1)
-        fields[4] = (instr >> 20) ^ 0xFFFFF000;
+        fields[4] = (instr >> 20) | 0xFFFFF000;
         
       else
         fields[4] = (instr >> 20);
-      
-      printf("rd = %d\n", fields[0]);
-      printf("func3 = %d\n", fields[1]);
-      printf("rs1 = %d\n", fields[2]);
-      printf("imm = %d\n", fields[4]);
-      printf("func7 = %d\n", fields[5]);
-      imediate(fields, regs);
+
+      load(fields, flash, regs);
       break;
       
     case rtype:
@@ -53,11 +58,6 @@ int check_type(uint32_t instr, reg *regs)
       fields[2]  = (instr >> 15) & 0x1F;
       fields[3]  = (instr >> 20) & 0x1F;
       fields[5]  = (instr >> 25) & 0x7F;
-      printf("rd = %d\n", fields[0]);
-      printf("func3 = %d\n", fields[1]);
-      printf("rs1 = %d\n", fields[2]);
-      printf("rs2 = %d\n", fields[3]);
-      printf("func7 = %d\n", fields[5]);
       regist(fields, regs);
       break;
       
@@ -68,13 +68,16 @@ int check_type(uint32_t instr, reg *regs)
       fields[2]  = (instr >> 15) & 0x1F;
       fields[3]  = (instr >> 20) & 0x1F;
       fields[5]  = (instr >> 25) & 0x7F;
-      printf("rd = %d\n", fields[0]);
-      printf("func3 = %d\n", fields[1]);
-      printf("rs1 = %d\n", fields[2]);
-      printf("rs2 = %d\n", fields[3]);
-      printf("func7 = %d\n", fields[5]);
-      //printf("BRANCH AQUI!! = %d\n\n", branch(fields, regs));
       return branch(fields, regs);
+      break;
+    
+    case 23:
+      break;
+    case 55:  /* LUI */ 
+      puts("UType");
+      fields[0] = (instr >> 7) & 0x1F;
+      fields[4] = (instr >> 20);
+      upper(fields, regs);
       break;
       
     default:

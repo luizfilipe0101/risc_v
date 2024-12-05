@@ -5,3 +5,4 @@
 #include <stdint.h>
 
 uint16_t strhex(char *num, int len);
+
