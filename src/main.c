@@ -4,6 +4,7 @@
 #include "decoder.h"
 #include "defines.h"
 #include "log.h"
+#include "memory_map.h"
 
 
 int checksum(char *stream, int size);
@@ -18,12 +19,11 @@ reg register_file[32] = {0};
 
 int main(int argc, char **argv)
 {
-  register int i;
   char *buf = NULL;
   char byte = 0;
   int  size = 0;
   int count = 0;
-  
+
   int entry_point = 0;
   int16_t PC = 0;
   uint32_t instr = 0;
@@ -32,8 +32,9 @@ int main(int argc, char **argv)
   
   
   FILE *rom = fopen(argv[1], "r");
+  FILE *mem_map = fopen("mem_map.txt", "w");
   
-  if(!rom)
+  if(!rom || !mem_map)
     return 1;
 
   /* Get buffer's size to MALLOC without special characters*/
@@ -92,17 +93,16 @@ int main(int argc, char **argv)
     instr |= flash[PC + 1].uval << 8;
     instr |= flash[PC + 2].uval << 8*2;
     instr |= flash[PC + 3].uval << 8*3;
-    
-    for(i = 31; i >=0; i--)
-      (instr >> i & 1) ? putchar('1') : putchar('0');
       
     putchar(10);
       
-    instr_return = check_type(instr, flash, register_file);
+    instr_return = check_type(instr, flash, register_file, PC);
+    instr = 0;
     
     switch(instr_return)
     {
       case 0:
+        memmap(flash);
         PC += 4;
         break;
         

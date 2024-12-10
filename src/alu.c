@@ -60,7 +60,7 @@ void imediate(int32_t *fields, reg *regs)
       
     
   }
-}
+}// immediate
 
 void regist(int32_t *fields, reg *regs)
 {
@@ -123,7 +123,7 @@ void regist(int32_t *fields, reg *regs)
       break;
     
   }
-}
+}// end regist
 
 void load(int32_t *fields, mem *flash, reg *regs)
 {
@@ -148,25 +148,72 @@ void load(int32_t *fields, mem *flash, reg *regs)
       temp |= ((int32_t)flash[regs[fields[rs1]].sval + fields[imm]+2].sval << 16);
       temp |= ((int32_t)flash[regs[fields[rs1]].sval + fields[imm]+3].sval << 24);
       
-      printf("Base: %d\n", regs[fields[rs1]].sval);
-      printf("Offset %d\n", fields[imm]);
-      printf("TEMP: %.8X\n", temp);
-      
       regs[fields[rd]].uval = temp;
       break;
       
-    case 4:
-      regs[fields[rd]].sval = flash[regs[fields[rs1] + fields[imm]].sval].sval;
+    case 4:   /* LBU */
+      regs[fields[rd]].sval = (uint8_t)flash[regs[fields[rs1] + fields[imm]].sval].uval;
       break;
       
-    case 5:
+    case 5:   /* LHU */
+      temp |= flash[regs[fields[rs1]].uval + fields[imm]].uval;
+      temp |= ((int32_t)flash[regs[fields[rs1]].uval + fields[imm]+1].uval << 8);
+      regs[fields[rd]].uval = (uint32_t)temp;
       break;
   }
 
-}
+}// end load
 
-void upper(int32_t *fields, reg *regs)
+void upper(char opcode, int32_t *fields, reg *regs, uint16_t pc)
 {
+
+  int32_t tmp;
+  register int i;
+  tmp = (fields[imm] << 12);
+
+  puts("NEW_LUI");
+
+  for(i = 31; i >= 0; i--)
+    (tmp >> i) & 1 ? putchar('1') : putchar('0');
+  putchar(10);
+  
   puts("LUI");
-  regs[fields[rd]].sval = (fields[imm] << 11);
-}
+  regs[fields[rd]].sval = (fields[imm] << 12);
+  
+
+}//end upper
+
+void store(mem *flash, reg *regs, int32_t *fields)
+{
+  register int i = 0;
+  int32_t new_imm = 0;
+  new_imm = fields[rd];
+  new_imm |= (fields[imm] << 6);
+
+  puts("NEW_IMM");
+  for(i = 31; i >= 0; i--)
+    (new_imm >> i) & 1 ? putchar('1') : putchar('0');
+  putchar(10);
+
+  switch(fields[func3])
+  {
+    case 0:
+      puts("[SB]");
+      flash[(regs[fields[rs1]].sval + new_imm) & 0xFFFF].sval = (regs[fields[rs2]].sval & 0xFF);
+    break;
+
+    case 1:
+      puts("[SH]");
+      flash[(regs[fields[rs1]].sval + new_imm) & 0xFFFF].sval = (regs[fields[rs2]].sval & 0xFF);
+      flash[(regs[fields[rs1]].sval + (new_imm + 1)) & 0xFFFF].sval = (regs[fields[rs2]].sval >> 8) & 0xFF;
+    break;
+
+    case 2:
+      puts("[SW]");
+      flash[(regs[fields[rs1]].sval + new_imm) & 0xFFFF].sval = (regs[fields[rs2]].sval & 0xFF);
+      flash[(regs[fields[rs1]].sval + (new_imm + 1)) & 0xFFFF].sval = (regs[fields[rs2]].sval >> 8) & 0xFF;
+      flash[(regs[fields[rs1]].sval + (new_imm + 2)) & 0xFFFF].sval = (regs[fields[rs2]].sval >> 16) & 0xFF;
+      flash[(regs[fields[rs1]].sval + (new_imm + 3)) & 0xFFFF].sval = (regs[fields[rs2]].sval >> 24) & 0xFF;
+    break;
+  }
+}// end store

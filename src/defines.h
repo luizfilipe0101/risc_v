@@ -16,6 +16,7 @@
 #define btype 99
 #define ltype 3
 #define utype 55
+#define stype 35
 
 #define lui 55
 #define auipc 23

@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include "defines.h"
 
-char *instr_name(int opcode);
+char *instr_name(int32_t opcode);
 
 int log_gen(char *rom, int romsize, mem *flash, reg *regs, uint32_t instr)
 {
@@ -71,8 +71,6 @@ int log_instr(int32_t instr, uint32_t type, int32_t *fields, reg *regs)
     register int i;
     int name = 0;
 
-
-
     FILE *log;
 
     log = fopen("log.txt", "a");
@@ -107,8 +105,8 @@ int log_instr(int32_t instr, uint32_t type, int32_t *fields, reg *regs)
     fprintf(log, "s10: %.4X ", regs[26].uval);
     fprintf(log, "s11: %.4X\n", regs[27].uval);
 
-    fprintf(log, "t0: %.4X  ", regs[5].uval);
-    fprintf(log, "t1: %.4X   ", regs[6].uval);
+    fprintf(log, "t0: %.8X  ", regs[5].uval);
+    fprintf(log, "t1: %.8X   ", regs[6].uval);
     fprintf(log, "t2: %.4X   ", regs[7].uval);
     fprintf(log, "t3: %.4X   ", regs[28].uval);
     fprintf(log, "t4: %.4X   ", regs[29].uval);
@@ -152,10 +150,14 @@ int log_instr(int32_t instr, uint32_t type, int32_t *fields, reg *regs)
 
             name |= instr & 0x7F;
 
-            fprintf(log, "[%s]\n", instr_name(name));
+            if(name == 55)
+                fprintf(log, "[%s]\n", "lui");
+            else    
+                fprintf(log, "[%s]\n", "auipc");
 
             break;
 
+        case ltype:
         case itype:
             for(i = 31; i >= 0; i--)
             {
@@ -189,14 +191,59 @@ int log_instr(int32_t instr, uint32_t type, int32_t *fields, reg *regs)
             }
             fputc(']', log);
             fputs("\n", log);
-            fprintf(log, "opcode: \n");
             fprintf(log, "rd: %d\n", fields[0]);
             fprintf(log, "func3: %d\n", fields[1]);
             fprintf(log, "rs1: %d\n", fields[2]);
             fprintf(log, "imm: %d\n", fields[4]);
-            name |= instr & 0x1F;
-            name |= (instr >> 11) & 0x7;
-            fprintf(log, "[%s]\n", instr_name(name));
+            fprintf(log, "[%s]\n", instr_name(instr));
+            break;
+
+        case stype:
+            for(i = 31; i >= 0; i--)
+            {
+                switch(i)
+                {
+                    case 31:
+                        fputc('[', log);
+                    break;
+
+                    case 24:
+                        fputc(']', log);
+                        fputc('[', log);
+                    break;
+
+                    case 19:
+                        fputc(']', log);
+                        fputc('[', log);
+                    break;
+
+                    case 14:
+                        fputc(']', log);
+                        fputc('[', log);
+                    break;
+
+                    case 11:
+                        fputc(']', log);
+                        fputc('[', log);
+                    break;
+
+                    case 6:
+                        fputc(']', log);
+                        fputc('[', log);
+                    break;
+                }
+                (instr >> i & 1) ? fputc('1', log) : fputc('0', log);
+            }
+
+            fputc(']', log);
+            fputs("\n", log);
+            fprintf(log, "imm_rd: %d\n", fields[0]);
+            fprintf(log, "func3: %d\n", fields[1]);
+            fprintf(log, "rs1: %d\n", fields[2]);
+            fprintf(log, "rs2: %d\n", fields[3]);
+            fprintf(log, "imm: %d\n", fields[4]);
+            fprintf(log, "[%s]\n", instr_name(instr));
+
             break;
     }
 
@@ -205,9 +252,18 @@ int log_instr(int32_t instr, uint32_t type, int32_t *fields, reg *regs)
     return 0;
 }
 
-char *instr_name(int opcode)
+char *instr_name(int32_t opcode)
 {
-    switch(opcode)
+    int32_t code = 0;
+    int tmp = 0;
+
+    code |= opcode & 0x7F;
+    tmp  |= (opcode >> 12) & 0x7;
+    code |= (tmp << 7);
+
+    printf("NUMBER: %d\n", code);
+
+    switch(code)
     {
         case 55:
             return "lui";

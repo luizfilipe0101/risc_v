@@ -9,9 +9,9 @@
 uint32_t opcode = 0;
 
 
-int check_type(uint32_t instr, mem *flash, reg *regs)
+int check_type(uint32_t instr, mem *flash, reg *regs, uint16_t pc)
 {
-  printf("Instr: %.8X\n", instr);
+
   int32_t fields[6] = {0};
   
   /*
@@ -24,7 +24,6 @@ int check_type(uint32_t instr, mem *flash, reg *regs)
   */
   
   opcode = instr & 0x7F;
-  printf("Opcode: %d\n", opcode);
 
   switch(opcode)
   {
@@ -53,6 +52,21 @@ int check_type(uint32_t instr, mem *flash, reg *regs)
 
       load(fields, flash, regs);
       break;
+
+    case stype:
+      fields[0] = (instr >> 7 & 0x1F);
+      fields[1] = ((instr >> 12) & 0x07);
+      fields[2] = ((instr >> 15) & 0x1F);
+      fields[3] = ((instr >> 20) & 0x1F);
+      fields[4] = ((instr >> 25) & 0x7F);
+      printf("fields[0] = %d\n", fields[0]);
+      printf("fields[1] = %d\n", fields[1]);
+      printf("fields[2] = %d\n", fields[2]);
+      printf("fields[3] = %d\n", fields[3]);
+      printf("fields[4] = %d\n", fields[4]);
+
+      store(flash, regs, fields);
+      break;
       
     case rtype:
       fields[0]  = (instr >> 7)  & 0x1F;    // Operações que preservam os bits úteis e zeram os demais //
@@ -73,13 +87,16 @@ int check_type(uint32_t instr, mem *flash, reg *regs)
       return branch(fields, regs);
       break;
     
+    /* U-type */
     case 23:
       break;
     case 55:  /* LUI */ 
+      char op = 0;
       puts("UType");
       fields[0] = (instr >> 7) & 0x1F;
-      fields[4] = (instr >> 20);
-      upper(fields, regs);
+      fields[4] = (instr >> 12);
+      op |= instr & 0x1F;
+      upper(op, fields, regs, pc);
       break;
       
     default:
@@ -88,7 +105,7 @@ int check_type(uint32_t instr, mem *flash, reg *regs)
   }
 
   log_instr(instr, opcode, fields, regs);
-  
+
   return 0;
 
 }
