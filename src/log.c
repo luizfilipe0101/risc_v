@@ -119,6 +119,50 @@ int log_instr(int32_t instr, uint32_t type, int32_t *fields, reg *regs)
     switch(type)
     {
         case rtype:
+            for(i = 31; i >= 0; i--)
+            {
+                switch(i)
+                {
+                    case 31:
+                        fputc('[', log);
+                    break;
+
+                    case 24:
+                        fputc(']', log);
+                        fputc('[', log);
+                    break;
+
+                    case 19:
+                        fputc(']', log);
+                        fputc('[', log);
+                    break;
+
+                    case 14:
+                        fputc(']', log);
+                        fputc('[', log);
+                    break;
+
+                    case 11:
+                        fputc(']', log);
+                        fputc('[', log);
+                    break;
+
+                    case 6:
+                        fputc(']', log);
+                        fputc('[', log);
+                    break;
+                }
+                (instr >> i & 1) ? fputc('1', log) : fputc('0', log);
+            }
+
+            fputc(']', log);
+            fputs("\n", log);
+            fprintf(log, "imm_rd: %d\n", fields[rd]);
+            fprintf(log, "func3: %d\n", fields[func3]);
+            fprintf(log, "rs1: %d\n", fields[rs1]);
+            fprintf(log, "rs2: %d\n", fields[rs2]);
+            fprintf(log, "func7: %d\n", fields[func7]);
+            fprintf(log, "[%s]\n", instr_name(instr, type));
             break;
 
         case btype:
@@ -204,6 +248,8 @@ int log_instr(int32_t instr, uint32_t type, int32_t *fields, reg *regs)
 
             break;
 
+        case ecall:
+        case jalr:
         case ltype:
         case itype:
             for(i = 31; i >= 0; i--)
@@ -343,8 +389,6 @@ char *instr_name(int32_t opcode, uint32_t type)
         code |= (tmp << 7);
     }
 
-    printf("NUMBER: %d\n", code);
-
     switch(code)
     {
         case 55:
@@ -452,6 +496,10 @@ char *instr_name(int32_t opcode, uint32_t type)
 
         case 0x8293:
             return "srai";
+        break;
+
+        case 115:
+            return "ecall";
         break;
     }
     return "";

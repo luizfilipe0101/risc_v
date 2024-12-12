@@ -13,9 +13,8 @@ void debug(void);
 
 
 mem flash[0xFFFF] = {0};
-//uint8_t flash[0xFFFF] = {0};
-
 reg register_file[32] = {0};
+
 
 int main(int argc, char **argv)
 {
@@ -23,14 +22,13 @@ int main(int argc, char **argv)
   char byte = 0;
   int  size = 0;
   int count = 0;
-
+  int instr_return = 0;
   int entry_point = 0;
+
   int16_t PC = 0;
   int32_t instr = 0;
-  
-  int instr_return = 0;
-  
-  
+
+
   FILE *rom = fopen(argv[1], "r");
   FILE *mem_map = fopen("mem_map.txt", "w");
   
@@ -63,7 +61,6 @@ int main(int argc, char **argv)
     {
       buf[count] = byte;
       count++;
-      //printf("%c", byte);
     }
     
   }
@@ -71,17 +68,10 @@ int main(int argc, char **argv)
   !checksum(buf, size) ? puts("CHECKSUM: OK!") : exit(1);
   load_memory(buf, size, &entry_point);
   
-
-  printf("Addr 16 = %.4X\n", flash[16].uval);
-
   
   // ******************* RUNNING *****************************
   
   PC += entry_point;
-  
-  putchar(10);
-    
-  //exit(0);
 
   log_gen(buf, size, flash, register_file, instr);
     
@@ -93,8 +83,6 @@ int main(int argc, char **argv)
     instr |= flash[PC + 1].uval << 8;
     instr |= flash[PC + 2].uval << 8*2;
     instr |= flash[PC + 3].uval << 8*3;
-      
-    putchar(10);
       
     instr_return = check_type(instr, flash, register_file, &PC);
     instr = 0;
@@ -112,13 +100,18 @@ int main(int argc, char **argv)
         fclose(rom);
         exit(1);
         break;
+
+      case -99:
+        break;
         
       default:
         PC += (int16_t)instr_return;     /* Branch or jump */
         break;
     }
 
-    
+    if(instr_return == -99)
+      break;
+
   }
   
   // ******************* END *********************************
@@ -181,7 +174,6 @@ void load_memory(char *rom, int len, int *entry)
 {
   register int i;
   register int j;
-  register int k;
   char read_byte[2] = {0};
   char get_addr[4] = {0};
   char get_status[2] = {0};
@@ -210,14 +202,12 @@ void load_memory(char *rom, int len, int *entry)
       read_byte[0] = rom[i+1];
       read_byte[1] = rom[i+2];
       data_len = strhex(read_byte, 2);
-      //printf("data_len %d = %d\n", i, data_len);
       
       get_addr[0] = rom[i+3];
       get_addr[1] = rom[i+4];
       get_addr[2] = rom[i+5];
       get_addr[3] = rom[i+6];
       addr = strhex(get_addr, 4);
-      //printf("Address: %.4X\n", addr);
       
       get_status[0] = rom[i+7];
       get_status[1] = rom[i+8];
@@ -228,12 +218,7 @@ void load_memory(char *rom, int len, int *entry)
         {
           read_byte[0] = rom[((i+j)+9)];
           read_byte[1] = rom[((i+j)+9)+1];
-          
-          //printf("Byte: %.4X\n", strhex(read_byte, 2));
-          for(k = 7; k >= 0; k--)
-            //(strhex(read_byte, 2) >> k) & 1 ? putchar('1') : putchar('0');
-          //putchar(10);
-          
+                    
           flash[addr+count_mem].uval = (uint8_t)strhex(read_byte, 2);
                     
           count_mem += 1;
