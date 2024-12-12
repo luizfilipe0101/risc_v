@@ -3,6 +3,6 @@
 
 #include "defines.h"
 
-int system_rv32i(reg *regs);
+int system_rv32i(reg *regs, mem *flash);
 
 #endif

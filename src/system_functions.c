@@ -3,7 +3,7 @@
 #include "defines.h"
 
 
-int32_t system_rv32i(reg *regs)
+int32_t system_rv32i(reg *regs, mem *flash)
 {
     switch(regs[a7].uval)
     {
@@ -12,6 +12,13 @@ int32_t system_rv32i(reg *regs)
             return -99;
 
         case 64: /* WRITE */
+            register int i;
+
+            printf(">>> ");
+            
+            for(i = 0; i < regs[a2].uval; i++)
+                printf("%c", flash[(uint16_t)regs[a1].uval + i].uval);
+
             return 0;
             break;
     }

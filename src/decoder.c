@@ -33,14 +33,15 @@ int check_type(int32_t instr, mem *flash, reg *regs, int16_t *pc)
       
       if(opcode == 103)
       {
+        int32_t next = jump(opcode, fields, regs, pc);
         log_instr(instr, opcode, fields, regs);
-        return jump(opcode, fields, regs, pc);
+        return next;
       }
 
       if(opcode == ecall)
       {
         log_instr(instr, opcode, fields, regs);
-        return system_rv32i(regs);
+        return system_rv32i(regs, flash);
         break;
       }
 

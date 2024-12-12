@@ -77,7 +77,8 @@ int main(int argc, char **argv)
     
   while(1)
   {
-    instr = 0;
+    instr ^= instr;
+    register_file[zr].sval ^= register_file[zr].sval;             /* Force value to zero simulating GND wired*/
     
     instr |= flash[PC].uval << 0;
     instr |= flash[PC + 1].uval << 8;
@@ -85,16 +86,15 @@ int main(int argc, char **argv)
     instr |= flash[PC + 3].uval << 8*3;
       
     instr_return = check_type(instr, flash, register_file, &PC);
-    instr = 0;
     
     switch(instr_return)
     {
       case 0:
-        memmap(flash);
         PC += 4;
         break;
         
       case -1:
+        memmap(flash);
         debug();
         free(buf);
         fclose(rom);
@@ -116,6 +116,7 @@ int main(int argc, char **argv)
   
   // ******************* END *********************************
 
+  memmap(flash);
   free(buf);
   fclose(rom);
         

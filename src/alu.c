@@ -104,31 +104,31 @@ void load(int32_t *fields, mem *flash, reg *regs)
   switch(fields[func3])
   {
     case 0:     /* LB */
-      regs[fields[rd]].sval = (int32_t)flash[ fields[rs1] + fields[imm] ].sval;
+      regs[fields[rd]].sval = (int8_t)flash[ (uint16_t)regs[fields[rs1]].sval + fields[imm] ].sval;
       break;
       
     case 1:     /* LH */
-      temp |= (int32_t)flash[ fields[rs1] + fields[imm] ].sval;
-      temp |= (int32_t)( flash[(regs[fields[rs1]].sval + fields[imm])+1].sval ) << 8;
+      temp |= (int32_t)flash[ (uint16_t)regs[fields[rs1]].sval + fields[imm] ].sval;
+      temp |= (int32_t)( flash[( (uint16_t)regs[fields[rs1]].sval + fields[imm])+1].sval ) << 8;
       regs[fields[rd]].sval = temp;
       break;
       
     case 2:    /* LW */ 
-      temp |= (int32_t)flash[regs[fields[rs1]].sval + fields[imm]].sval;
-      temp |= ((int32_t)flash[regs[fields[rs1]].sval + fields[imm]+1].sval << 8);
-      temp |= ((int32_t)flash[regs[fields[rs1]].sval + fields[imm]+2].sval << 16);
-      temp |= ((int32_t)flash[regs[fields[rs1]].sval + fields[imm]+3].sval << 24);
+      temp |= (int32_t)flash[ (uint16_t)regs[fields[rs1]].sval + fields[imm]].sval;
+      temp |= ((int32_t)flash[ (uint16_t)regs[fields[rs1]].sval + fields[imm]+1].sval << 8);
+      temp |= ((int32_t)flash[ (uint16_t)regs[fields[rs1]].sval + fields[imm]+2].sval << 16);
+      temp |= ((int32_t)flash[ (uint16_t)regs[fields[rs1]].sval + fields[imm]+3].sval << 24);
       
-      regs[fields[rd]].uval = temp;
+      regs[(uint16_t)fields[rd]].uval = temp;
       break;
       
     case 4:   /* LBU */
-      regs[fields[rd]].sval = (uint8_t)flash[regs[fields[rs1] + fields[imm]].sval].uval;
+      regs[fields[rd]].uval = (uint8_t)flash[(uint16_t)regs[fields[rs1] + fields[imm]].sval].uval;
       break;
       
     case 5:   /* LHU */
       temp |= flash[regs[fields[rs1]].uval + fields[imm]].uval;
-      temp |= ((int32_t)flash[regs[fields[rs1]].uval + fields[imm]+1].uval << 8);
+      temp |= (flash[regs[fields[rs1]].uval + fields[imm]+1].uval << 8);
       regs[fields[rd]].uval = (uint32_t)temp;
       break;
   }
@@ -139,10 +139,10 @@ void upper(char opcode, int32_t *fields, reg *regs, uint16_t pc)
 {
   if(opcode == 55)
   {
-    regs[fields[rd]].sval = (fields[imm] << 12);
+    regs[fields[rd]].uval = (fields[imm] << 12);
 
   }else
-    regs[fields[rd]].sval = pc + (uint16_t)fields[imm];
+    regs[fields[rd]].uval = pc + (uint16_t)fields[imm];
   
   
 
@@ -172,7 +172,7 @@ void store(mem *flash, reg *regs, int32_t *fields)
 
 int16_t jump(uint32_t opcode, int32_t *fields, reg *regs, int16_t *pc)
 {
-  if(opcode == 111)
+  if(opcode == jal)
   {
     regs[fields[rd]].sval = *pc + 4;
     return fields[imm];
