@@ -17,10 +17,11 @@
 #define ltype 3
 #define utype 55
 #define stype 35
+#define jtype 111
 
 #define lui 55
 #define auipc 23
-#define jal 110
+#define jal 111
 #define jalr 0x67
 
 #define beq  0x63

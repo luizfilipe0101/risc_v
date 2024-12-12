@@ -9,7 +9,7 @@
 uint32_t opcode = 0;
 
 
-int check_type(uint32_t instr, mem *flash, reg *regs, uint16_t pc)
+int check_type(int32_t instr, mem *flash, reg *regs, int16_t *pc)
 {
 
   int32_t fields[6] = {0};
@@ -24,6 +24,7 @@ int check_type(uint32_t instr, mem *flash, reg *regs, uint16_t pc)
   */
   
   opcode = instr & 0x7F;
+  printf("OPCODE NOW: %d\n", opcode);
 
   switch(opcode)
   {
@@ -79,29 +80,70 @@ int check_type(uint32_t instr, mem *flash, reg *regs, uint16_t pc)
       
     case btype:
       puts("Branch");
-      fields[0]  = (instr >> 7)  & 0x1F;
-      fields[1]  = (instr >> 12) & 0x07;
-      fields[2]  = (instr >> 15) & 0x1F;
-      fields[3]  = (instr >> 20) & 0x1F;
-      fields[5]  = (instr >> 25) & 0x7F;
+      fields[rd]  = (instr >> 7)  & 0x1F;
+      fields[func3]  = (instr >> 12) & 0x07;
+      fields[rs1]  = (instr >> 15) & 0x1F;
+      fields[rs2]  = (instr >> 20) & 0x1F;
+
+      fields[imm]  |= (instr & 0x80000000) >> 19;
+      fields[imm]  |= (instr & 0x80) << 4;
+      fields[imm]  |= (instr & 0x7E000000) >> 20;
+      fields[imm]  |= (instr & 0xF00) >> 7;
+
+      log_instr(instr, opcode, fields, regs);
+
       return branch(fields, regs);
+
       break;
     
     /* U-type */
     case 23:
-      break;
     case 55:  /* LUI */ 
-      char op = 0;
       puts("UType");
+      int32_t op = 0;
       fields[0] = (instr >> 7) & 0x1F;
-      fields[4] = (instr >> 12);
-      op |= instr & 0x1F;
-      upper(op, fields, regs, pc);
+      fields[4] = ((signed int )instr >> 12);
+      op = instr & 0x7F;
+      upper(op, fields, regs, *pc);
+      break;
+
+    case jtype:
+      register int i;
+
+      fields[rd]  = (instr >> 7)  & 0x1F;
+      
+      fields[imm] |= (instr & 0x80000000) >> 11;  // MSB
+      fields[imm] |= (instr & 0xFF000);
+      fields[imm] |= (instr & 0x100000) >> 9;
+      fields[imm] |= (instr & 0x7E000000) >> 20;
+      fields[imm] |= (instr & 0x1E00000) >> 20;
+
+      
+      puts("JAL BIN:");
+      for(i = 31; i >= 0; i--)
+        (instr >> i) & 1 ? putchar('1') : putchar('0');
+
+      putchar(10); 
+
+      puts("JAL IMM");
+      for(i = 31; i >= 0; i--)
+        (fields[imm] >> i) & 1 ? putchar('1') : putchar('0');
+
+      putchar(10); 
+
+      int16_t result =  jump(fields, regs, *pc);
+
+      printf("JUMP RETURN VALUE: %d\n",result);
+
+      log_instr(instr, opcode, fields, regs);
+
+      return result;
+      
       break;
       
     default:
       fprintf(stderr, "RV32I - Internal Segmentation Fault\n");
-      return 1;      
+      return -1;      
   }
 
   log_instr(instr, opcode, fields, regs);

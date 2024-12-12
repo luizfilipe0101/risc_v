@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 
   int entry_point = 0;
   int16_t PC = 0;
-  uint32_t instr = 0;
+  int32_t instr = 0;
   
   int instr_return = 0;
   
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
       
     putchar(10);
       
-    instr_return = check_type(instr, flash, register_file, PC);
+    instr_return = check_type(instr, flash, register_file, &PC);
     instr = 0;
     
     switch(instr_return)
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
         PC += 4;
         break;
         
-      case 1:
+      case -1:
         debug();
         free(buf);
         fclose(rom);

@@ -9,26 +9,26 @@ int branch(int32_t *fields, reg *regs)
 
   switch(fields[func3])
   {
-    case beq:
-      regs[fields[rs1]].sval == regs[fields[rs2]].sval ? (result = fields[rd]) : (result = 0);
+    case 0:  /* BEQ */
+      regs[fields[rs1]].sval == regs[fields[rs2]].sval ? (result = fields[imm]) : (result = 0);
       break;
     
-    case bne:
-      regs[fields[rs1]].sval != regs[fields[rs2]].sval ? (result = fields[rd]) : (result = 0);
+    case 1:   /* BNE */
+      regs[fields[rs1]].sval != regs[fields[rs2]].sval ? (result = fields[imm]) : (result = 0);
       break;
       
-    case blt:
-      regs[fields[rs1]].sval < regs[fields[rs2]].sval ? (result = fields[rd]) : (result = 0);
+    case 4: /* BLT */
+      regs[fields[rs1]].sval < regs[fields[rs2]].sval ? (result = fields[imm]) : (result = 0);
       break;
       
-    case bge:
-      regs[fields[rs1]].sval > regs[fields[rs2]].sval ? (result = fields[rd]) : (result = 0);
+    case 5: /* BGE */
+      regs[fields[rs1]].sval > regs[fields[rs2]].sval ? (result = fields[imm]) : (result = 0);
       break;
       
-    case bltu:
+    case 6: /* BLTU */
       break;
       
-    case bgeu:
+    case 7: /* BGEU */
       break;
       
     default:

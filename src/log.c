@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include "defines.h"
 
-char *instr_name(int32_t opcode);
+char *instr_name(int32_t opcode, uint32_t type);
 
 int log_gen(char *rom, int romsize, mem *flash, reg *regs, uint32_t instr)
 {
@@ -121,6 +121,53 @@ int log_instr(int32_t instr, uint32_t type, int32_t *fields, reg *regs)
         case rtype:
             break;
 
+        case btype:
+            for(i = 31; i >= 0; i--)
+            {
+                switch(i)
+                {
+                    case 31:
+                        fputc('[', log);
+                    break;
+
+                    case 24:
+                        fputc(']', log);
+                        fputc('[', log);
+                    break;
+
+                    case 19:
+                        fputc(']', log);
+                        fputc('[', log);
+                    break;
+
+                    case 14:
+                        fputc(']', log);
+                        fputc('[', log);
+                    break;
+
+                    case 11:
+                        fputc(']', log);
+                        fputc('[', log);
+                    break;
+
+                    case 6:
+                        fputc(']', log);
+                        fputc('[', log);
+                    break;
+                }
+                (instr >> i & 1) ? fputc('1', log) : fputc('0', log);
+            }
+
+            fputc(']', log);
+            fputc(10, log);
+            fprintf(log, "rd: %d\n", fields[rd]);
+            fprintf(log, "rs1: %d\n", fields[rs1]);
+            fprintf(log, "rs2: %d\n", fields[rs2]);
+            fprintf(log, "imm: %d\n", fields[imm]);
+            fprintf(log, "[%s]\n", instr_name(instr, type));
+            break;
+
+        case 23:
         case utype:
             for(i = 31; i >= 0; i--)
             {
@@ -195,7 +242,7 @@ int log_instr(int32_t instr, uint32_t type, int32_t *fields, reg *regs)
             fprintf(log, "func3: %d\n", fields[1]);
             fprintf(log, "rs1: %d\n", fields[2]);
             fprintf(log, "imm: %d\n", fields[4]);
-            fprintf(log, "[%s]\n", instr_name(instr));
+            fprintf(log, "[%s]\n", instr_name(instr, type));
             break;
 
         case stype:
@@ -242,8 +289,38 @@ int log_instr(int32_t instr, uint32_t type, int32_t *fields, reg *regs)
             fprintf(log, "rs1: %d\n", fields[2]);
             fprintf(log, "rs2: %d\n", fields[3]);
             fprintf(log, "imm: %d\n", fields[4]);
-            fprintf(log, "[%s]\n", instr_name(instr));
+            fprintf(log, "[%s]\n", instr_name(instr, type));
 
+            break;
+
+        case jtype:
+            for(i = 31; i >= 0; i--)
+            {
+                switch(i)
+                {
+                    case 31:
+                        fputc('[', log);
+                    break;
+
+                    case 11:
+                        fputc(']', log);
+                        fputc('[', log);
+                    break;
+
+                    case 6:
+                        fputc(']', log);
+                        fputc('[', log);
+                    break;
+                }
+                (instr >> i & 1) ? fputc('1', log) : fputc('0', log);
+            }
+
+            fputc(']', log);
+            fputc(10, log);
+            fprintf(log, "rd: %d\n", fields[0]);
+            fprintf(log, "imm: %d\n", fields[4]);
+
+            fprintf(log, "[%s]\n", instr_name(instr, type));
             break;
     }
 
@@ -252,14 +329,19 @@ int log_instr(int32_t instr, uint32_t type, int32_t *fields, reg *regs)
     return 0;
 }
 
-char *instr_name(int32_t opcode)
+char *instr_name(int32_t opcode, uint32_t type)
 {
     int32_t code = 0;
     int tmp = 0;
 
-    code |= opcode & 0x7F;
-    tmp  |= (opcode >> 12) & 0x7;
-    code |= (tmp << 7);
+    if(type == utype || type == jtype)
+        code = opcode & 0x7F;
+    else
+    {
+        code |= opcode & 0x7F;
+        tmp  |= (opcode >> 12) & 0x7;
+        code |= (tmp << 7);
+    }
 
     printf("NUMBER: %d\n", code);
 
@@ -273,7 +355,7 @@ char *instr_name(int32_t opcode)
             return "auipc";
         break;
 
-        case 110:
+        case 111:
             return "jal";
         break;
 

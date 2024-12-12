@@ -166,19 +166,27 @@ void load(int32_t *fields, mem *flash, reg *regs)
 
 void upper(char opcode, int32_t *fields, reg *regs, uint16_t pc)
 {
+  printf(" #### OPCODE: %d\n", opcode);
+  if(opcode == 55)
+  {
+    int32_t tmp;
+    register int i;
+    tmp = (fields[imm] << 12);
 
-  int32_t tmp;
-  register int i;
-  tmp = (fields[imm] << 12);
+    puts("NEW_LUI");
 
-  puts("NEW_LUI");
+    for(i = 31; i >= 0; i--)
+      (tmp >> i) & 1 ? putchar('1') : putchar('0');
+    putchar(10);
+    
+    puts("LUI");
+    regs[fields[rd]].sval = (fields[imm] << 12);
 
-  for(i = 31; i >= 0; i--)
-    (tmp >> i) & 1 ? putchar('1') : putchar('0');
-  putchar(10);
-  
-  puts("LUI");
-  regs[fields[rd]].sval = (fields[imm] << 12);
+  }else
+  {
+    puts("AUIPC");
+    regs[fields[rd]].sval = pc + (uint16_t)fields[imm];
+  }
   
 
 }//end upper
@@ -217,3 +225,10 @@ void store(mem *flash, reg *regs, int32_t *fields)
     break;
   }
 }// end store
+
+int16_t jump(int32_t *fields, reg *regs, int16_t pc)
+{
+  puts("JAL!!!");
+  regs[fields[rd]].sval = pc + 4;
+  return fields[imm];
+}
