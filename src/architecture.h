@@ -8,6 +8,6 @@
 #include "defines.h"
 
 extern mem MEMORY[MEM_SIZE];
-extern uint8_t databus;
+extern uint32_t databus;
 
 #endif

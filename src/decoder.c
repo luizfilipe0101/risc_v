@@ -9,7 +9,7 @@
 #include "system_functions.h"
 
 
-uint32_t opcode = 0;
+uint32_t opcode   =  0;
 int32_t fields[6] = {0};
 
 int check_type(int32_t instr, reg *regs, int16_t *pc)
@@ -22,8 +22,8 @@ int check_type(int32_t instr, reg *regs, int16_t *pc)
   fields[func7] = (instr >> 25) & 0x7F;
 
   int32_t alu_res = 0;
-  int32_t src1 = 0;
-  int32_t src2 = 0;
+  int32_t src1    = 0;
+  int32_t src2    = 0;
 
   ctrl_unit(opcode, fields[func3], fields[func7]);
 
@@ -36,7 +36,7 @@ int check_type(int32_t instr, reg *regs, int16_t *pc)
     case stype:
     case jtype:
 
-      switch((ctrl_reg >> 7) & 0x3)                                   // ImmSrc
+      switch((ctrl_reg >> 5) & 0x3)                                   // ImmSrc
       {
         case 0: // I-type [31:20]
           fields[imm] = (instr >> 20);
@@ -56,9 +56,9 @@ int check_type(int32_t instr, reg *regs, int16_t *pc)
         case 3: // J-type [31][19:12][20][30:25][24:21][0]
           fields[imm] |= (instr & 0x80000000) >> 12;
           fields[imm] |= (instr & 0xFF000);
-          fields[imm] |= (instr & 0x100000) >> 9;
+          fields[imm] |= (instr & 0x100000)   >>  9;
           fields[imm] |= (instr & 0x7E000000) >> 20;
-          fields[imm] |= (instr & 0x1E00000) >> 20;
+          fields[imm] |= (instr & 0x1E00000)  >> 20;
         break;
       }
       
@@ -70,9 +70,9 @@ int check_type(int32_t instr, reg *regs, int16_t *pc)
       
     case btype:
       fields[imm]  |= (instr & 0x80000000) >> 19;
-      fields[imm]  |= (instr & 0x80)       << 4;
+      fields[imm]  |= (instr & 0x80)       <<  4;
       fields[imm]  |= (instr & 0x7E000000) >> 20;
-      fields[imm]  |= (instr & 0xF00)      >> 7;
+      fields[imm]  |= (instr & 0xF00)      >>  7;
 
       log_instr(instr, opcode, fields, regs);
 
@@ -84,44 +84,35 @@ int check_type(int32_t instr, reg *regs, int16_t *pc)
       fprintf(stderr, "RV32I - Internal Segmentation Fault\n");
       return -99;      
   }
-
-  /*
-            PC target       0   
-            Result source   1
-            Memory write    2
-
-            ALU control     3
-            ALU control     3
-            ALU control     3
-
-            ALU Source      4
-
-            ImmSource       5
-            ImmSource       5
-
-            RegWrite        6
-
-            ---             000000
-
-            000 [000] 0 [01] 0 - 000000
-
-            Não usam ALU:
-              LUI
-              JAL
-
-
-        */
   
   src1 = regs[fields[rs1]].uval;
-  src2 = (ctrl_reg >> 9) & 1 ? fields[imm] : regs[fields[rs2]].uval;  // ALU src (rs2 or imm)
+  src2 = (ctrl_reg >> 8) & 1 ? fields[imm] : regs[fields[rs2]].uval;  // ALU src (rs2 or imm)
   
-  alu_res = alu(src1, src2, (uint8_t)((ctrl_reg >> 10) & 0x07));      // ALU opcode* [000]
+  alu_res = alu(src1, src2, (uint8_t)((ctrl_reg >> 9) & 0x07));       // ALU opcode* [000]
 
-  (ctrl_reg >> 13) & 1 ? (MEMORY[alu_res].sval = fields[rs2]) : (0);  // WE Mem
+  (ctrl_reg >> 12) & 1 ? (MEMORY[alu_res].sval = fields[rs2]) : (0);  // WE Mem
 
-  databus = (ctrl_reg >> 14) & 1 ? MEMORY[alu_res].sval : alu_res;    // Final result from ALU or Mem (result src)
-    
-  (ctrl_reg >> 6) & 1 ? (regs[fields[rd]].sval = databus) : (0);      // WE register file 
+
+  switch((ctrl_reg >> 13) & 0x3)                                      // Final result from ALU, Mem or Imm (result src)
+  {
+    case 0:
+      databus = alu_res;
+    break;
+
+    case 1:
+      databus = MEMORY[alu_res].sval;
+    break;
+
+    case 2:
+      databus = fields[imm];
+    break;
+
+    default:
+    break;
+  }
+
+  printf("Databus: %d\n", databus);
+  (ctrl_reg >> 4) & 1 ? (regs[fields[rd]].sval = databus) : (0);      // WE register file 
     
   log_instr(instr, opcode, fields, regs);
 
