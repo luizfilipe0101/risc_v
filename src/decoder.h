@@ -5,4 +5,6 @@
 #include <stdint.h>
 #include "defines.h"
 
-int check_type(int32_t instr, mem *flash, reg *regs, int16_t *pc);
+int check_type(int32_t instr, reg *regs, int16_t *pc);
+extern uint32_t opcode;
+extern int32_t fields[6];

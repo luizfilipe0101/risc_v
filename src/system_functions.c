@@ -21,6 +21,10 @@ int32_t system_rv32i(reg *regs, mem *flash)
 
             return 0;
             break;
+
+        default:
+            puts("PUTA MERDAAAAAAAAA!");
+            break;
     }
     return 0;
 }
