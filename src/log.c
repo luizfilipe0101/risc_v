@@ -57,7 +57,7 @@ int log_gen(char *rom, int romsize, mem *flash, reg *regs, uint32_t instr)
 
 }// end log_gen
 
-int log_instr(int32_t instr, uint32_t type, int32_t *fields, reg *regs)
+int log_instr(uint8_t is_mem, mem *flash, uint16_t addr, int32_t instr, uint32_t type, int32_t *fields, reg *regs)
 {
    /*
     rd    0
@@ -75,46 +75,60 @@ int log_instr(int32_t instr, uint32_t type, int32_t *fields, reg *regs)
 
     log = fopen("log.txt", "a");
 
-    fputs("***** Registers *****\n", log);
+    if(!is_mem)
+    {
+        fputs("***** Registers *****\n", log);
 
-    fprintf(log, "Zr: %.4X  ", regs[0].uval);
-    fprintf(log, "ra: %.4X  ", regs[1].uval);
-    fprintf(log, "sp: %.4X  ", regs[2].uval);
-    fprintf(log, "gp: %.4X  ", regs[3].uval);
-    fprintf(log, "tp: %.4X  ", regs[4].uval);
-    fprintf(log, "x8 / s0 / fp: %.4X     \n", regs[8].uval);
+        fprintf(log, "Zr: %.4X  ", regs[0].uval);
+        fprintf(log, "ra: %.4X  ", regs[1].uval);
+        fprintf(log, "sp: %.4X  ", regs[2].uval);
+        fprintf(log, "gp: %.4X  ", regs[3].uval);
+        fprintf(log, "tp: %.4X  ", regs[4].uval);
+        fprintf(log, "x8 / s0 / fp: %.4X     \n", regs[8].uval);
+        
+        fprintf(log, "a0: %.4X  ", regs[10].uval);
+        fprintf(log, "a1: %.4X  ", regs[11].uval);
+        fprintf(log, "a2: %.4X  ", regs[12].uval);
+        fprintf(log, "a3: %.4X  ", regs[13].uval);
+        fprintf(log, "a4: %.4X  ", regs[14].uval);
+        fprintf(log, "a5: %.4X  ", regs[15].uval);
+        fprintf(log, "a6: %.4X  ", regs[16].uval);
+        fprintf(log, "a7: %.4X\n", regs[17].uval);
+
+        fprintf(log, "s1: %.4X  ", regs[9].uval);
+        fprintf(log, "s2: %.4X  ", regs[18].uval);
+        fprintf(log, "s3: %.4X  ", regs[19].uval);
+        fprintf(log, "s4: %.4X  ", regs[20].uval);
+        fprintf(log, "s5: %.4X  ", regs[21].uval);
+        fprintf(log, "s6: %.4X  ", regs[22].uval);
+        fprintf(log, "s7: %.4X  ", regs[23].uval);
+        fprintf(log, "s8: %.4X  ", regs[24].uval);
+        fprintf(log, "s9: %.4X  ", regs[25].uval);
+        fprintf(log, "s10: %.4X ", regs[26].uval);
+        fprintf(log, "s11: %.4X\n", regs[27].uval);
+
+        fprintf(log, "t0: %.8X  ", regs[5].uval);
+        fprintf(log, "t1: %.8X   ", regs[6].uval);
+        fprintf(log, "t2: %.4X   ", regs[7].uval);
+        fprintf(log, "t3: %.4X   ", regs[28].uval);
+        fprintf(log, "t4: %.4X   ", regs[29].uval);
+        fprintf(log, "t5: %.4X   ", regs[30].uval);
+        fprintf(log, "t6: %.4X   ", regs[31].uval);
+        fputc(10, log);
+        fputs("*********************", log);
+        fputc(10, log);
+    }else
+    {
+        fputs("*****   Memory  *****\n", log);
+
+        for(i = (addr - 4); i <= (addr + 4); i++)
+            fprintf(log, "0x%.4X --> %.2X\n", i, flash[i].uval);
+
+        fputs("*********************", log);
+        fputc(10, log);
+    }
+
     
-    fprintf(log, "a0: %.4X  ", regs[10].uval);
-    fprintf(log, "a1: %.4X  ", regs[11].uval);
-    fprintf(log, "a2: %.4X  ", regs[12].uval);
-    fprintf(log, "a3: %.4X  ", regs[13].uval);
-    fprintf(log, "a4: %.4X  ", regs[14].uval);
-    fprintf(log, "a5: %.4X  ", regs[15].uval);
-    fprintf(log, "a6: %.4X  ", regs[16].uval);
-    fprintf(log, "a7: %.4X\n", regs[17].uval);
-
-    fprintf(log, "s1: %.4X  ", regs[9].uval);
-    fprintf(log, "s2: %.4X  ", regs[18].uval);
-    fprintf(log, "s3: %.4X  ", regs[19].uval);
-    fprintf(log, "s4: %.4X  ", regs[20].uval);
-    fprintf(log, "s5: %.4X  ", regs[21].uval);
-    fprintf(log, "s6: %.4X  ", regs[22].uval);
-    fprintf(log, "s7: %.4X  ", regs[23].uval);
-    fprintf(log, "s8: %.4X  ", regs[24].uval);
-    fprintf(log, "s9: %.4X  ", regs[25].uval);
-    fprintf(log, "s10: %.4X ", regs[26].uval);
-    fprintf(log, "s11: %.4X\n", regs[27].uval);
-
-    fprintf(log, "t0: %.8X  ", regs[5].uval);
-    fprintf(log, "t1: %.8X   ", regs[6].uval);
-    fprintf(log, "t2: %.4X   ", regs[7].uval);
-    fprintf(log, "t3: %.4X   ", regs[28].uval);
-    fprintf(log, "t4: %.4X   ", regs[29].uval);
-    fprintf(log, "t5: %.4X   ", regs[30].uval);
-    fprintf(log, "t6: %.4X   ", regs[31].uval);
-    fputc(10, log);
-    fputs("*********************", log);
-    fputc(10, log);
 
     switch(type)
     {

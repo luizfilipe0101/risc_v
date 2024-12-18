@@ -23,8 +23,14 @@
     flag  carry     7
     flag  overflow  7
 
+    ALU codes:
+    000 = add       100 = slt
+    001 = sub       101 = sl
+    010 = and       110 = sr
+    011 =  or       111 = sra
+
     0   1  2    3  4    5  6     7
-    0 [00] 0 [000] 0 [000] 0 [0000]
+    0 [01] 0 [000] 1 [000] 1 [0000]
         
 */
 
@@ -36,6 +42,7 @@ int16_t ctrl_reg = 0;
 
 void ctrl_unit(uint32_t opcode, int32_t fnc3, int32_t fnc7)
 {
+    //printf("Opcade no controller: %d\n", opcode);
     switch(opcode)
     {
         case utype: /* 0x37 */
@@ -58,7 +65,8 @@ void ctrl_unit(uint32_t opcode, int32_t fnc3, int32_t fnc7)
         case ltype:
             // 010 [000] 1 [000] 1 - 00000
             // [000] = Sum
-            ctrl_reg = 0x4220;
+            // 0 [10] 0 [000] 1 [001] 0 [0000]
+            ctrl_reg = 0x2110;
         break;
 
         case jal:
@@ -87,8 +95,8 @@ void ctrl_unit(uint32_t opcode, int32_t fnc3, int32_t fnc7)
                 RegWrite        0 = False --- 1 = True
                 ---             7
             */
-            // 001 [000] 1 [00] 0 - 000000
-            ctrl_reg = 0xC2;
+            // 0 [00] 1 [000] 1 [001] 0 [0000]
+            ctrl_reg = 0x1120;
         break;
     }
 }

@@ -25,6 +25,8 @@ int check_type(int32_t instr, reg *regs, int16_t *pc)
   int32_t src1    = 0;
   int32_t src2    = 0;
 
+  int8_t log_type = 0;
+
   ctrl_unit(opcode, fields[func3], fields[func7]);
 
   switch(opcode)
@@ -43,7 +45,9 @@ int check_type(int32_t instr, reg *regs, int16_t *pc)
         break;
 
         case 1: // S-type [31:25][11:7]
-          fields[imm] |= (instr & 0x80000000) >> 20;
+          log_type = 1;
+
+          fields[imm]  = (instr & 0x80000000) >> 20;
           fields[imm] |= (instr & 0x7E000000) >> 20;
           fields[imm] |= (instr & 0xF00)      >> 07;
           fields[imm] |= (instr & 0x80)       >> 07;
@@ -74,7 +78,7 @@ int check_type(int32_t instr, reg *regs, int16_t *pc)
       fields[imm]  |= (instr & 0x7E000000) >> 20;
       fields[imm]  |= (instr & 0xF00)      >>  7;
 
-      log_instr(instr, opcode, fields, regs);
+      //log_instr(log_type, MEMORY, 0, instr, opcode, fields, regs);
 
       return branch(fields, regs);
 
@@ -90,17 +94,35 @@ int check_type(int32_t instr, reg *regs, int16_t *pc)
   
   alu_res = alu(src1, src2, (uint8_t)((ctrl_reg >> 9) & 0x07));       // ALU opcode* [000]
 
-  (ctrl_reg >> 12) & 1 ? (MEMORY[alu_res].sval = fields[rs2]) : (0);  // WE Mem
-
+  (ctrl_reg >> 12) & 1 ? (MEMORY[(uint16_t)alu_res].sval = regs[fields[rs2]].sval) : (0);  // WE Mem
 
   switch((ctrl_reg >> 13) & 0x3)                                      // Final result from ALU, Mem or Imm (result src)
   {
     case 0:
       databus = alu_res;
+      printf("ALU res: %.4X\n", alu_res);
     break;
 
     case 1:
-      databus = MEMORY[alu_res].sval;
+      switch(fields[func3])
+      {
+        case 0:
+          databus  = ((int32_t)MEMORY[(uint16_t)alu_res].sval & 0xFF);
+        break;
+
+        case 1:
+          databus  = ((int32_t)MEMORY[(uint16_t)alu_res].sval << 8);
+          databus |= ((int32_t)MEMORY[((uint16_t)alu_res) + 1].sval & 0xFF);
+        break;
+
+        case 2:
+          databus  = ((int32_t)MEMORY[(uint16_t)alu_res].sval << 24);
+          databus |= ((int32_t)MEMORY[((uint16_t)alu_res) + 1].sval << 16);
+          databus |= ((int32_t)MEMORY[((uint16_t)alu_res) + 2].sval <<  8);
+          databus |= ((int32_t)MEMORY[((uint16_t)alu_res) + 3].sval & 0xFF);
+        break;
+      }
+      
     break;
 
     case 2:
@@ -113,8 +135,8 @@ int check_type(int32_t instr, reg *regs, int16_t *pc)
 
   printf("Databus: %d\n", databus);
   (ctrl_reg >> 4) & 1 ? (regs[fields[rd]].sval = databus) : (0);      // WE register file 
-    
-  log_instr(instr, opcode, fields, regs);
+
+  log_instr(log_type, MEMORY, (uint16_t)databus, instr, opcode, fields, regs);
 
   return 0;
 
