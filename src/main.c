@@ -45,7 +45,7 @@ int main(int argc, char **argv)
       
     instr_return = check_type(instr, register_file, &PC);
 
-    (ctrl_reg >> 15) & 1 ? (PC += fields[imm]) : (PC += 4);    // PC target
+    (ctrl_reg >> 15) & 1 ? (PC += (int16_t)fields[imm]) : (PC += 4);    // PC target
 
     if(instr_return == -99)
       break;

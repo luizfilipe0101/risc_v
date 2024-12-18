@@ -17,29 +17,45 @@
 
 int32_t alu(int32_t src1, int32_t src2, uint8_t ctrl)
 {
+
+  int32_t result = 0;
+
   switch(ctrl)
   {
+    // Arithmetic circuit
     case 0:
-    case 1:
-      // SUB = src1 + TWO'S(src2)
-      return ctrl != 0 ? (src1 + (~(src2)+1)) : (src1 + src2);
+      result = (src1 + src2);
+      break;
+
+    case 1:  // Sub adding TWO's(src2)
+      result = (src1 + (~(src2)+1));
+      break;
+      
+    case 5:
+      result = src1 < src2 ? (1) : (0);
       break;
     
+    //Logic circuit
     case 2:
-      return src1 & src2;
+      result = src1 & src2;
       break;
 
     case 3:
-      return src1 | src2;
-      break;
-
-    case 4:
-      return src1 < src2 ? (1) : (0);
+      result = src1 | src2;
       break;
 
     default:
-      return 0;
       break;
-    
   }
+
+  // Nflag
+  result < 0 ? (ctrl_reg |= 0x8) : (ctrl_reg &= ~0x8);
+  // Zflag
+  result == 0 ? (ctrl_reg |= 0x4) : (ctrl_reg &= ~0x4);
+  // Cflag
+  (result >> 31 & 1) != (rs1 >> 31 & 1) ? (ctrl_reg |= 0x2) : (ctrl_reg &= ~0x2);
+  // Vflag
+  result > INT32_MAX ? (ctrl_reg |= 0x1) : (ctrl_reg &= ~0x1);
+
+  return result;
 }

@@ -2,7 +2,7 @@
     PC target       0           0 = pc+4     1 = pc+target   
     
     Result source   1          00 = alu     01 = Mem
-    Result source   1          10 = Imm     11 = ---
+    Result source   1          10 = Imm     11 = PC+4
 
     Memory write    2           0 = False    1 = True
 
@@ -80,8 +80,8 @@ void ctrl_unit(uint32_t opcode, int32_t fnc3, int32_t fnc7)
                 RegWrite        0 = False --- 1 = True
                 ---             7
             */
-            // 100 [000] 1 [11] 1 - 000000
-            ctrl_reg = 0x83C0;
+            // 1 [11] 0 [000] 1 [011] 1 [0000]
+            ctrl_reg = 0xE170;
         break;
 
         case stype:
