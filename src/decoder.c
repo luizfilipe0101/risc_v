@@ -120,6 +120,7 @@ int check_type(int32_t instr, reg *regs, int16_t *pc)
           databus |= ((int32_t)MEMORY[((uint16_t)alu_res) + 1].sval << 16);
           databus |= ((int32_t)MEMORY[((uint16_t)alu_res) + 2].sval <<  8);
           databus |= ((int32_t)MEMORY[((uint16_t)alu_res) + 3].sval & 0xFF);
+          
         break;
       }
       
